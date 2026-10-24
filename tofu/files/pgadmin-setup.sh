@@ -12,7 +12,9 @@ set -euo pipefail
 log() { echo "[pgadmin] $*"; }
 
 ACCOUNT_FILE=/etc/pgadmin-team/account
-PAGILA_URL=https://raw.githubusercontent.com/devrimgunduz/pagila/master
+# Fester Stand statt master: seit Juli 2026 nutzt Pagila uuidv7(), das erst
+# PostgreSQL 18 kennt. Ubuntu 24.04 bringt PostgreSQL 16 mit.
+PAGILA_URL=https://raw.githubusercontent.com/devrimgunduz/pagila/e0e35a666f31a786b9d3c06cb83799fc46db25d4
 
 export DEBIAN_FRONTEND=noninteractive
 export HOME=/root
@@ -64,6 +66,11 @@ rm -rf /etc/pgadmin-team
   load-servers /opt/pgadmin/servers.json --user "$email"
 # setup.py lief als root; Datenbank und Log müssen dem Webserver gehören
 chown -R www-data:www-data /var/lib/pgadmin /var/log/pgadmin
+
+# Ubuntus "Listen 80" bindet IPv6 nur, wenn beim Start von Apache schon eine
+# IPv6-Adresse konfiguriert ist. Nach einem Neustart der VM ist das nicht
+# sicher, deshalb beide Familien ausdrücklich.
+sed -i 's/^Listen 80$/Listen 0.0.0.0:80\nListen [::]:80/' /etc/apache2/ports.conf
 systemctl restart apache2
 
 # Erst fertig melden, wenn die Anmeldeseite antwortet

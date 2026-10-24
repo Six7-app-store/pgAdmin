@@ -10,6 +10,11 @@ mock_provider "openstack" {
       id = "00000000-0000-0000-0000-00000000image"
     }
   }
+  mock_data "openstack_networking_subnet_v2" {
+    defaults = {
+      gateway_ip = "141.72.10.1"
+    }
+  }
   mock_resource "openstack_networking_port_v2" {
     defaults = {
       all_fixed_ips = ["141.72.10.7", "2001:db8:4::7"]
